@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美股期权权利金收益率计算器 · 多股票对比</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card-bg: #161616;
+            --card-bg-hover: #1c1c1c;
+            --card-border: #2a2a2a;
+            --text: #e0d6c2;
+            --text-primary: #f0e6d3;
+            --text-secondary: #8a8070;
+            --text-dim: #999;
+            --gold: #c9a84c;
+            --gold-light: #d4b85e;
+            --gold-dark: #a88830;
+            --gold-dim: #7a6a40;
+            --gold-glow: rgba(201, 168, 76, 0.12);
+            --green: #5a9e6f;
+            --red: #c4554d;
+            --red-light: #e57373;
+            --orange: #d4943a;
+            --input-bg: #1a1a1a;
+            --input-border: #333;
+            --input-focus: var(--gold);
+            --input-focus-glow: rgba(201,168,76,0.1);
+            --radius: 10px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.5);
+            --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            --btn-primary-bg: linear-gradient(135deg, #c9a84c 0%, #a88830 100%);
+            --btn-primary-color: #0a0a0a;
+            --btn-primary-border: #c9a84c;
+            --btn-primary-hover-bg: linear-gradient(135deg, #d4b85e 0%, #b89838 100%);
+            --btn-primary-shadow: 0 2px 12px rgba(201,168,76,0.2);
+            --btn-primary-hover-shadow: 0 4px 20px rgba(201,168,76,0.35);
+            --btn-outline-color: var(--gold-light);
+            --btn-outline-border: var(--gold-dark);
+            --btn-outline-hover-bg: var(--gold-glow);
+            --btn-outline-hover-border: var(--gold-light);
+            --btn-outline-active-bg: var(--gold-glow);
+            --btn-outline-active-border: var(--gold-light);
+            --btn-outline-active-color: var(--gold-light);
+            --thead-bg: #1c1c1c;
+            --thead-color: #4a4a4a;
+            --thead-border: #222;
+            --tbody-color: #999;
+            --tbody-border: rgba(42,42,42,0.35);
+            --tr-hover-bg: rgba(201,168,76,0.04);
+            --row-stripe-bg: rgba(201,168,76,0.015);
+            --stock-sep-bg: rgba(201,168,76,0.06);
+            --stock-sep-color: var(--gold-light);
+            --header-h1-color: linear-gradient(135deg, #d4b85e 0%, #c9a84c 30%, #f0d878 50%, #c9a84c 70%, #a88830 100%);
+            --header-line-color: linear-gradient(90deg, transparent, var(--gold), transparent);
+            --header-sub-color: var(--text-secondary);
+            --formula-color: #666;
+            --formula-hl-color: var(--gold-dim);
+            --field-label-color: var(--gold-dim);
+            --card-symbol-color: var(--gold-light);
+            --card-hover-border: var(--gold-dim);
+            --card-hover-shadow: 0 4px 20px rgba(201,168,76,0.08);
+            --card-meta-span-color: var(--gold-dim);
+            --card-mini-stat-bg: rgba(201,168,76,0.03);
+            --card-mini-stat-border: rgba(42,42,42,0.5);
+            --card-mini-stat-val-color: var(--gold-light);
+            --card-spinner-overlay: rgba(10,10,10,0.7);
+            --card-spinner-border: var(--card-border);
+            --card-spinner-top: var(--gold);
+            --card-error-color: var(--red);
+            --card-error-date-color: var(--gold-dim);
+            --suggest-bg: var(--card-bg);
+            --suggest-border: var(--card-border);
+            --suggest-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            --suggest-item-border: rgba(42,42,42,0.25);
+            --suggest-item-hover-bg: var(--gold-glow);
+            --suggest-item-hover-color: var(--gold-light);
+            --suggest-sym-color: var(--gold-light);
+            --suggest-cn-color: var(--text-secondary);
+            --suggest-cn-hover-color: var(--gold-dim);
+            --suggest-no-result-color: var(--text-secondary);
+            --toast-bg: var(--card-bg);
+            --footer-color: var(--text-secondary);
+            --footer-border: rgba(42,42,42,0.3);
+            --indicator-high-color: var(--green);
+            --indicator-mid-color: var(--gold-dim);
+            --indicator-low-color: #777;
+            --scrollbar-track: #0a0a0a;
+            --scrollbar-thumb: var(--card-border);
+            --scrollbar-thumb-hover: var(--gold-dim);
+            --select-arrow-svg: %23c9a84c;
+        }
+
+        /* 白色券商风格 */
+        body.theme-light {
+            --bg: #f5f5f5;
+            --card-bg: #fff;
+            --card-bg-hover: #fafafa;
+            --card-border: #e0e0e0;
+            --text: #333;
+            --text-primary: #222;
+            --text-secondary: #999;
+            --text-dim: #aaa;
+            --gold: #e53935;
+            --gold-light: #e53935;
+            --gold-dark: #c62828;
+            --gold-dim: #999;
+            --gold-glow: rgba(229,57,53,0.08);
+            --green: #43a047;
+            --red: #e53935;
+            --red-light: #ff5252;
+            --orange: #e53935;
+            --input-bg: #fafafa;
+            --input-border: #ddd;
+            --input-focus: var(--red);
+            --input-focus-glow: rgba(229,57,53,0.08);
+            --shadow: 0 1px 4px rgba(0,0,0,0.08);
+            --btn-primary-bg: var(--red);
+            --btn-primary-color: #fff;
+            --btn-primary-border: var(--red);
+            --btn-primary-hover-bg: var(--red-light);
+            --btn-primary-shadow: none;
+            --btn-primary-hover-shadow: none;
+            --btn-outline-color: #666;
+            --btn-outline-border: #ddd;
+            --btn-outline-hover-bg: #f5f5f5;
+            --btn-outline-hover-border: #ccc;
+            --btn-outline-active-bg: #ffebee;
+            --btn-outline-active-border: var(--red);
+            --btn-outline-active-color: var(--red);
+            --thead-bg: #fafafa;
+            --thead-color: #aaa;
+            --thead-border: #eee;
+            --tbody-color: #333;
+            --tbody-border: rgba(0,0,0,0.06);
+            --tr-hover-bg: rgba(229,57,53,0.03);
+            --row-stripe-bg: #fafafa;
+            --stock-sep-bg: #f5f5f5;
+            --stock-sep-color: #222;
+            --header-h1-color: #222;
+            --header-line-color: var(--red);
+            --header-sub-color: #aaa;
+            --formula-color: #bbb;
+            --formula-hl-color: #999;
+            --field-label-color: #999;
+            --card-symbol-color: #222;
+            --card-hover-border: #ccc;
+            --card-hover-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            --card-meta-span-color: #666;
+            --card-mini-stat-bg: #fafafa;
+            --card-mini-stat-border: #eee;
+            --card-mini-stat-val-color: var(--red);
+            --card-spinner-overlay: rgba(255,255,255,0.7);
+            --card-spinner-border: #eee;
+            --card-spinner-top: var(--red);
+            --card-error-color: var(--red);
+            --card-error-date-color: #999;
+            --suggest-bg: #fff;
+            --suggest-border: #e0e0e0;
+            --suggest-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            --suggest-item-border: rgba(0,0,0,0.06);
+            --suggest-item-hover-bg: #ffebee;
+            --suggest-item-hover-color: var(--red);
+            --suggest-sym-color: var(--red);
+            --suggest-cn-color: #999;
+            --suggest-cn-hover-color: #666;
+            --suggest-no-result-color: #bbb;
+            --toast-bg: #fff;
+            --footer-color: #bbb;
+            --footer-border: rgba(0,0,0,0.06);
+            --indicator-high-color: var(--red);
+            --indicator-mid-color: #e57373;
+            --indicator-low-color: #999;
+            --scrollbar-track: #f5f5f5;
+            --scrollbar-thumb: #ddd;
+            --scrollbar-thumb-hover: #bbb;
+            --select-arrow-svg: %23999;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        body:not(.theme-light) {
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.02) 0%, transparent 50%);
+        }
+
+        .container { max-width: 1500px; margin: 0 auto; padding: 20px 24px; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 32px 0 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: var(--header-line-color);
+        }
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--header-h1-color);
+            margin-bottom: 6px;
+            letter-spacing: 2px;
+        }
+        body:not(.theme-light) .header h1 {
+            background: linear-gradient(135deg, #d4b85e 0%, #c9a84c 30%, #f0d878 50%, #c9a84c 70%, #a88830 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p {
+            color: var(--header-sub-color);
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        /* Formula Bar */
+        .formula-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--formula-color);
+            box-shadow: var(--shadow);
+            opacity: 0.7;
+        }
+        .formula-bar .hl { color: var(--formula-hl-color); font-weight: 500; }
+
+        /* Add Stock Bar */
+        .add-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow);
+        }
+        .add-bar .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .add-bar .field label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--field-label-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .add-bar input,
+        .add-bar select {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .add-bar input:focus,
+        .add-bar select:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px var(--input-focus-glow);
+        }
+        .add-bar input { width: 140px; }
+        .add-bar select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='var(--select-arrow-svg)' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+        .range-inputs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .range-inputs input { width: 80px; }
+        .range-inputs span { color: var(--gold-dim); font-size: 12px; }
+        .btn {
+            padding: 9px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .btn-gold {
+            background: var(--btn-primary-bg);
+            color: var(--btn-primary-color);
+            border: 1px solid var(--btn-primary-border);
+            box-shadow: var(--btn-primary-shadow);
+        }
+        .btn-gold:hover {
+            background: var(--btn-primary-hover-bg);
+            box-shadow: var(--btn-primary-hover-shadow);
+        }
+        .btn-gold:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--btn-outline-border);
+            color: var(--btn-outline-color);
+        }
+        .btn-outline:hover { background: var(--btn-outline-hover-bg); border-color: var(--btn-outline-hover-border); }
+        .btn-outline.active { background: var(--btn-outline-active-bg); border-color: var(--btn-outline-active-border); color: var(--btn-outline-active-color); }
+        .btn-sm { padding: 5px 12px; font-size: 11px; }
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+        .btn-danger:hover { background: rgba(196,85,77,0.1); }
+
+        /* Stock Cards */
+        .stock-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .stock-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .stock-card:hover {
+            border-color: var(--card-hover-border);
+            box-shadow: var(--card-hover-shadow);
+        }
+        .stock-card .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .stock-card .card-symbol {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--card-symbol-color);
+            letter-spacing: 1px;
+        }
+        .stock-card .card-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: -2px;
+        }
+        .stock-card .card-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .stock-card .card-meta span { color: var(--card-meta-span-color); }
+        .stock-card .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        .stock-card .mini-stat {
+            text-align: center;
+            padding: 8px 4px;
+            background: var(--card-mini-stat-bg);
+            border-radius: 6px;
+            border: 1px solid var(--card-mini-stat-border);
+        }
+        .stock-card .mini-stat .val {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--card-mini-stat-val-color);
+        }
+        .stock-card .mini-stat .lbl {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stock-card .card-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            align-items: center;
+        }
+        .stock-card .card-range-edit {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .stock-card .card-range-edit input {
+            width: 55px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            padding: 4px 6px;
+            color: var(--text-primary);
+            font-size: 11px;
+            text-align: center;
+        }
+        .stock-card .card-type-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold-dim);
+            letter-spacing: 0.5px;
+        }
+        .stock-card.loading-card {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .stock-card .card-spinner {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-spinner-overlay);
+            border-radius: var(--radius);
+        }
+        .stock-card .card-spinner .spin {
+            width: 24px; height: 24px;
+            border: 2px solid var(--card-spinner-border);
+            border-top-color: var(--card-spinner-top);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Global Controls */
+        .global-controls {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .global-controls .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .global-controls .field label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--field-label-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .global-controls input {
+            width: 100px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+        }
+        .global-controls input:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px var(--input-focus-glow);
+        }
+
+        /* Compare Table */
+        .compare-section { margin-bottom: 24px; }
+        .compare-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .compare-header h2 {
+            font-size: 17px;
+            color: var(--gold-light);
+            letter-spacing: 1px;
+        }
+        body.theme-light .compare-header h2 { color: #222; }
+        .table-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .table-scroll {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-scroll::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+        .table-scroll::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+        .table-scroll::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        thead { position: sticky; top: 0; z-index: 2; }
+        thead th {
+            background: var(--thead-bg);
+            color: var(--thead-color);
+            font-weight: 400;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 10px 14px;
+            text-align: right;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--thead-border);
+        }
+        thead th:first-child { text-align: left; }
+        tbody td {
+            padding: 18px 14px;
+            text-align: right;
+            border-bottom: 1px solid var(--tbody-border);
+            white-space: nowrap;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--tbody-color);
+        }
+        /* 行与行之间加间距 */
+        tbody tr { border-spacing: 0 6px; }
+        /* 股票名左对齐，普通字体 */
+        tbody td:first-child {
+            text-align: left;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-weight: 500;
+        }
+        /* 核心指标列：最后两列（单笔回报、年化回报）稍微放大 */
+        tbody td:nth-child(6),
+        tbody td:nth-child(7) {
+            font-size: 14px;
+        }
+        /* 年化回报按收益高低着色 */
+        .annual-low { color: #888; }
+        .annual-mid { color: #f0c040; }
+        .annual-high { color: #4caf50; }
+        body.theme-light .annual-low { color: #aaa; }
+        body.theme-light .annual-mid { color: #e6a800; }
+        body.theme-light .annual-high { color: #2e7d32; }
+        /* 斑马纹交替背景 */
+        tbody tr:nth-child(even) td {
+            background: var(--row-stripe-bg);
+        }
+        tbody tr:hover td { background: var(--tr-hover-bg); }
+
+        /* Stock separator in table */
+        .stock-sep td {
+            background: var(--stock-sep-bg) !important;
+            color: var(--stock-sep-color) !important;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.3; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--toast-bg);
+            border: 1px solid var(--red);
+            color: var(--red);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            z-index: 200;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        .toast.show { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Suggest Dropdown */
+        .suggest-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--suggest-bg);
+            border: 1px solid var(--suggest-border);
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--suggest-shadow);
+        }
+        .suggest-dropdown::-webkit-scrollbar { width: 5px; }
+        .suggest-dropdown::-webkit-scrollbar-track { background: transparent; }
+        .suggest-dropdown::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 3px; }
+        .suggest-item {
+            padding: 9px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text);
+            border-bottom: 1px solid var(--suggest-item-border);
+            transition: all 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .suggest-item:last-child { border-bottom: none; }
+        .suggest-item:hover, .suggest-item.active {
+            background: var(--suggest-item-hover-bg);
+            color: var(--suggest-item-hover-color);
+        }
+        .suggest-item .sym { font-weight: 700; color: var(--suggest-sym-color); letter-spacing: 0.5px; }
+        .suggest-item .cn { color: var(--suggest-cn-color); font-size: 12px; }
+        .suggest-item:hover .cn, .suggest-item.active .cn { color: var(--suggest-cn-hover-color); }
+        .suggest-no-result {
+            padding: 12px 14px;
+            font-size: 13px;
+            color: var(--suggest-no-result-color);
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--footer-color);
+            font-size: 11px;
+            letter-spacing: 1px;
+            border-top: 1px solid var(--footer-border);
+            margin-top: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .stock-cards { grid-template-columns: 1fr; }
+            .add-bar { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>美股期权权利金收益率计算器</h1>
+            <p>多股票添加 · 自定义天数 · 实时对比</p>
+            <button id="themeToggle" onclick="toggleTheme()" style="position:absolute;top:8px;right:0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;color:var(--text-secondary);">☀️ 切换主题</button>
+        </div>
+
+        <!-- Formula -->
+        <div class="formula-bar">
+            <span>单笔回报 =</span>
+            <span class="hl">权利金 / (行权价 − 权利金)</span>
+            <span>+</span>
+            <span class="hl">国债利率 × 天数 / 365</span>
+            <span style="margin: 0 8px; color: #444;">|</span>
+            <span>年化回报 =</span>
+            <span class="hl">权利金 / (行权价 − 权利金) × 365 / 天数</span>
+            <span>+</span>
+            <span class="hl">国债利率</span>
+        </div>
+
+        <!-- Add Stock Bar -->
+        <div class="add-bar">
+            <div class="field" style="position:relative;">
+                <label>股票代码 / 名称</label>
+                <input type="text" id="newSymbol" placeholder="如 AAPL / 苹果 / Tesla" autocomplete="off">
+                <div id="suggestDropdown" class="suggest-dropdown" style="display:none;"></div>
+            </div>
+            <div class="field">
+                <label>期权类型</label>
+                <select id="newOptionType">
+                    <option value="puts" selected>看跌 (Puts)</option>
+                    <option value="calls" disabled style="color:#666;">看涨 (Calls) — 开发中</option>
+                </select>
+            </div>
+            <button class="btn btn-gold" onclick="addStock()">+ 添加股票</button>
+        </div>
+
+        <!-- Global Controls -->
+        <div class="global-controls">
+            <div class="field">
+                <label>行权日期（统一）</label>
+                <select id="globalExpiration" onchange="onGlobalExpChange()" style="background:var(--input-bg);border:1px solid var(--input-border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text-primary);font-size:14px;cursor:pointer;min-width:220px;">
+                    <option value="">请先添加股票</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>国债利率 (%)</label>
+                <input type="number" id="riskFreeRate" value="3.8" step="0.01" min="0">
+            </div>
+            <button class="btn btn-gold" id="fetchAllBtn" onclick="fetchAll()">🔍 全部查询</button>
+            <button class="btn btn-outline btn-sm" onclick="clearAll()" style="margin-left:auto;">清空列表</button>
+        </div>
+
+        <!-- Stock Cards -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;" id="cardsToggleBar">
+            <button id="cardsToggleBtn" onclick="toggleCards()" style="background:none;border:none;color:var(--gold-dim);cursor:pointer;font-size:13px;padding:2px 4px;">▼ 持仓列表</button>
+        </div>
+        <div class="stock-cards" id="stockCards"></div>
+        <div class="empty-state" id="emptyCards">
+            <div class="icon">📋</div>
+            <p>还没有添加股票，在上方输入股票代码并点击「添加股票」</p>
+        </div>
+
+        <!-- Compare Section -->
+        <div class="compare-section" id="compareSection" style="display:none;">
+            <div class="compare-header">
+                <h2>多股票期权对比明细</h2>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <span style="font-size:11px;color:var(--text-secondary);">排序：</span>
+                    <button class="btn btn-outline btn-sm sort-btn active" data-sort="default" onclick="setSort('default')">默认顺序</button>
+                    <button class="btn btn-outline btn-sm sort-btn" data-sort="desc" onclick="setSort('desc')">收益率 ↓</button>
+                    <button class="btn btn-outline btn-sm sort-btn" data-sort="asc" onclick="setSort('asc')">收益率 ↑</button>
+                    <span style="flex:1;"></span>
+                    <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 导出 CSV</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>股票</th>
+                                <th>现价</th>
+                                <th>到期日</th>
+                                <th>行权价</th>
+                                <th>权利金</th>
+                                <th>单笔回报</th>
+                                <th>年化回报</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" id="emptyTable">
+            <div class="icon">📊</div>
+            <p>添加股票后点击「全部查询」开始分析</p>
+        </div>
+
+        <div class="toast" id="toast"></div>
+        <div class="footer">数据来源：Yahoo Finance (yfinance) · 仅供参考，不构成投资建议</div>
+    </div>
+
+    <script>
+        // ===== State =====
+        const STORAGE_KEY = 'options_compare_stocks';
+        const EXP_STORAGE_KEY = 'options_compare_expiration';
+
+        let stockList = [];          // { symbol, optionType, data? }
+        let globalExpirations = [];  // 全局行权日期列表（取自第一只股票）
+        let globalSelectedExp = null;
+        let allResultsData = null;
+        let currentSort = 'default'; // 'default' | 'desc' | 'asc'
+        let suggestTimer = null;
+        let activeSuggestIdx = -1;
+        let suggestResults = [];
+
+        // ===== localStorage 持久化 =====
+        function saveToStorage() {
+            // 只保存基本信息，不保存数据结果
+            const toSave = stockList.map(s => ({ symbol: s.symbol, optionType: s.optionType }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+            if (globalSelectedExp) {
+                localStorage.setItem(EXP_STORAGE_KEY, globalSelectedExp);
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    if (Array.isArray(saved) && saved.length > 0) {
+                        stockList = saved.map(s => ({ symbol: s.symbol, optionType: s.optionType || 'puts', data: null }));
+                    }
+                }
+                const savedExp = localStorage.getItem(EXP_STORAGE_KEY);
+                if (savedExp) {
+                    globalSelectedExp = savedExp;
+                }
+            } catch (e) {
+                // 解析失败则忽略
+            }
+        }
+
+        // ===== Helpers =====
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 4000);
+        }
+
+        // ===== Suggest Search =====
+        async function searchSuggest(query) {
+            if (!query || query.trim().length < 1) {
+                hideSuggest();
+                return;
+            }
+            try {
+                const resp = await fetch(`/api/search-symbol?q=${encodeURIComponent(query)}`);
+                const data = await resp.json();
+                suggestResults = data || [];
+                activeSuggestIdx = -1;
+                renderSuggest();
+            } catch (e) {
+                suggestResults = [];
+                renderSuggest();
+            }
+        }
+
+        function renderSuggest() {
+            const dropdown = document.getElementById('suggestDropdown');
+            if (suggestResults.length === 0) {
+                const query = document.getElementById('newSymbol').value.trim();
+                if (query.length > 0) {
+                    dropdown.innerHTML = '<div class="suggest-no-result">未找到匹配股票，请尝试其他关键词</div>';
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+                return;
+            }
+            let html = '';
+            suggestResults.forEach((item, i) => {
+                const activeCls = i === activeSuggestIdx ? ' active' : '';
+                html += `<div class="suggest-item${activeCls}" data-idx="${i}" onmousedown="selectSuggest(${i})">
+                    <span class="sym">${item.symbol}</span>
+                    <span class="cn">${item.cn_name} (${item.name})</span>
+                </div>`;
+            });
+            dropdown.innerHTML = html;
+            dropdown.style.display = 'block';
+        }
+
+        function hideSuggest() {
+            document.getElementById('suggestDropdown').style.display = 'none';
+            suggestResults = [];
+            activeSuggestIdx = -1;
+        }
+
+        function selectSuggest(idx) {
+            const item = suggestResults[idx];
+            if (!item) return;
+            document.getElementById('newSymbol').value = item.symbol;
+            hideSuggest();
+            addStock();
+        }
+
+        // 输入事件：防抖搜索
+        document.getElementById('newSymbol').addEventListener('input', function(e) {
+            clearTimeout(suggestTimer);
+            const val = this.value.trim();
+            suggestTimer = setTimeout(() => searchSuggest(val), 200);
+        });
+
+        // 键盘导航
+        document.getElementById('newSymbol').addEventListener('keydown', function(e) {
+            const dropdown = document.getElementById('suggestDropdown');
+            if (dropdown.style.display === 'none') {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addStock();
+                }
+                return;
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeSuggestIdx = Math.min(activeSuggestIdx + 1, suggestResults.length - 1);
+                renderSuggest();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeSuggestIdx = Math.max(activeSuggestIdx - 1, -1);
+                renderSuggest();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeSuggestIdx >= 0 && activeSuggestIdx < suggestResults.length) {
+                    selectSuggest(activeSuggestIdx);
+                } else if (suggestResults.length > 0) {
+                    selectSuggest(0);
+                }
+            } else if (e.key === 'Escape') {
+                hideSuggest();
+            }
+        });
+
+        // 点击其他地方关闭下拉
+        document.addEventListener('click', function(e) {
+            const input = document.getElementById('newSymbol');
+            const dropdown = document.getElementById('suggestDropdown');
+            if (e.target !== input && !dropdown.contains(e.target)) {
+                hideSuggest();
+            }
+        });
+
+        // ===== Add / Remove Stock =====
+        async function addStock() {
+            const symbol = document.getElementById('newSymbol').value.trim().toUpperCase();
+            if (!symbol) { showToast('请输入股票代码或名称'); return; }
+            if (stockList.find(s => s.symbol === symbol)) {
+                showToast(`${symbol} 已存在，请勿重复添加`);
+                return;
+            }
+            const optionType = document.getElementById('newOptionType').value;
+
+            stockList.push({ symbol, optionType, data: null });
+
+            document.getElementById('newSymbol').value = '';
+            document.getElementById('newSymbol').focus();
+
+            // 如果还没有全局行权日，拉取该股票的到期日列表作为全局选项
+            if (globalExpirations.length === 0) {
+                try {
+                    const resp = await fetch(`/api/expirations?symbol=${encodeURIComponent(symbol)}`);
+                    const expData = await resp.json();
+                    globalExpirations = expData.expirations || [];
+                    if (globalExpirations.length > 0) {
+                        globalSelectedExp = globalExpirations[0].date;
+                    }
+                } catch (e) {
+                    globalExpirations = [];
+                }
+            }
+
+            updateGlobalExpSelect();
+            saveToStorage();
+            renderCards();
+        }
+
+        function removeStock(index) {
+            stockList.splice(index, 1);
+            allResultsData = null;
+            // 如果列表清空，重置全局行权日
+            if (stockList.length === 0) {
+                globalExpirations = [];
+                globalSelectedExp = null;
+                updateGlobalExpSelect();
+            }
+            saveToStorage();
+            renderCards();
+            renderTable();
+        }
+
+        function onGlobalExpChange() {
+            globalSelectedExp = document.getElementById('globalExpiration').value;
+            stockList.forEach(s => { s.data = null; });
+            allResultsData = null;
+            saveToStorage();
+            renderCards();
+            renderTable();
+        }
+
+        function updateGlobalExpSelect() {
+            const sel = document.getElementById('globalExpiration');
+            if (globalExpirations.length === 0) {
+                sel.innerHTML = '<option value="">请先添加股票</option>';
+                sel.disabled = true;
+                return;
+            }
+            sel.disabled = false;
+            sel.innerHTML = globalExpirations.map(e =>
+                `<option value="${e.date}" ${globalSelectedExp === e.date ? 'selected' : ''}>${e.label}</option>`
+            ).join('');
+        }
+
+        function selectExpiration(date, autoFetch) {
+            globalSelectedExp = date;
+            updateGlobalExpSelect();
+            stockList.forEach(s => { s.data = null; });
+            allResultsData = null;
+            saveToStorage();
+            renderCards();
+            renderTable();
+            if (autoFetch) {
+                fetchAll();
+            }
+        }
+
+        function clearAll() {
+            stockList = [];
+            globalExpirations = [];
+            globalSelectedExp = null;
+            allResultsData = null;
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(EXP_STORAGE_KEY);
+            updateGlobalExpSelect();
+            renderCards();
+            renderTable();
+        }
+
+        // ===== Render Cards =====
+        function renderCards() {
+            const container = document.getElementById('stockCards');
+            const empty = document.getElementById('emptyCards');
+
+            if (stockList.length === 0) {
+                container.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+
+            container.innerHTML = stockList.map((s, i) => {
+                const d = s.data;
+                const typeLabel = s.optionType === 'puts' ? '看跌' : (s.optionType === 'calls' ? '看涨' : s.optionType);
+                const hasData = d && !d.error;
+                const hasError = d && d.error;
+                const availableDates = d && d.available_dates;
+
+                // 错误提示 + 可用日期推荐
+                let errorBlockHtml = '';
+                if (hasError) {
+                    errorBlockHtml = `<div class="card-meta" style="margin-bottom:8px;"><span style="color:var(--red);">⚠️ ${d.error}</span></div>`;
+                    if (availableDates && availableDates.length > 0) {
+                        const dateChips = availableDates.map(ad => {
+                            return `<button class="btn btn-outline btn-sm" onclick="selectExpiration('${ad.date}', true)" style="margin:2px 4px 2px 0;font-size:11px;">📅 ${ad.label}</button>`;
+                        }).join('');
+                        errorBlockHtml += `<div style="font-size:11px;color:var(--gold-dim);margin-bottom:4px;">💡 以下日期有符合条件的期权，点击切换：</div><div style="display:flex;flex-wrap:wrap;">${dateChips}</div>`;
+                    }
+                }
+
+                return `<div class="stock-card" id="card-${i}">
+                    <div class="card-header">
+                        <span class="card-symbol">${s.symbol}</span>
+                        <button class="btn btn-danger btn-sm" onclick="removeStock(${i})">✕</button>
+                    </div>
+                    ${hasError ? errorBlockHtml : ''}
+                </div>`;
+            }).join('');
+        }
+
+        // ===== Fetch All =====
+        async function fetchAll() {
+            if (stockList.length === 0) {
+                showToast('请先添加至少一只股票');
+                return;
+            }
+
+            if (!globalSelectedExp) {
+                showToast('请先选择行权日期');
+                return;
+            }
+
+            const riskFreeRate = parseFloat(document.getElementById('riskFreeRate').value) || 3.8;
+            const stocks = stockList.map(s => ({
+                symbol: s.symbol,
+                option_type: s.optionType,
+                selected_exp: globalSelectedExp
+            }));
+
+            document.getElementById('fetchAllBtn').disabled = true;
+            document.getElementById('fetchAllBtn').textContent = '⏳ 查询中...';
+            
+            // 显示正在加载状态
+            stockList.forEach(s => { s.data = undefined; });
+            renderCards();
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000); // 2分钟超时
+
+            try {
+                const resp = await fetch('/api/fetch-options', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stocks, risk_free_rate: riskFreeRate }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showToast(data.error || '请求失败');
+                    stockList.forEach(s => { s.data = null; });
+                    renderCards();
+                    return;
+                }
+
+                // 更新每只股票的数据
+                (data.stocks || []).forEach((stockData, i) => {
+                    if (i < stockList.length) {
+                        stockList[i].data = stockData;
+                    }
+                });
+
+                allResultsData = data;
+                renderCards();
+                renderTable();
+                // 有对比表格后自动折叠卡片
+                collapseCards();
+                
+                // 显示成功提示
+                const successCount = (data.stocks || []).filter(s => !s.error).length;
+                const failCount = (data.stocks || []).filter(s => s.error).length;
+                if (failCount > 0) {
+                    showToast(`${successCount} 只成功，${failCount} 只失败`);
+                }
+
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (err.name === 'AbortError') {
+                    showToast('请求超时，Yahoo Finance 响应缓慢，请减少股票数量或缩小天数范围后重试');
+                } else {
+                    showToast('网络错误: ' + err.message + '。请检查网络连接后重试');
+                }
+                stockList.forEach(s => { if (s.data === undefined) s.data = null; });
+                renderCards();
+            } finally {
+                document.getElementById('fetchAllBtn').disabled = false;
+                document.getElementById('fetchAllBtn').textContent = '🔍 全部查询';
+            }
+        }
+
+        // ===== Render Compare Table =====
+        function renderTable() {
+            const section = document.getElementById('compareSection');
+            const empty = document.getElementById('emptyTable');
+            const tbody = document.getElementById('tableBody');
+
+            if (!allResultsData || !allResultsData.all_results || allResultsData.all_results.length === 0) {
+                section.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            section.style.display = 'block';
+            empty.style.display = 'none';
+
+            const results = [...allResultsData.all_results];
+
+            // 排序
+            if (currentSort === 'desc') {
+                results.sort((a, b) => b.annualized_rate - a.annualized_rate);
+            } else if (currentSort === 'asc') {
+                results.sort((a, b) => a.annualized_rate - b.annualized_rate);
+            }
+            // default: 保持原顺序（按股票添加顺序+到期日）
+
+            // 计算全局指标阈值（基于 annualized_rate）
+            const indicators = results.map(r => r.annualized_rate).sort((a, b) => a - b);
+            const p33 = indicators[Math.floor(indicators.length * 0.33)];
+            const p66 = indicators[Math.floor(indicators.length * 0.66)];
+
+            let lastSymbol = '';
+            let html = '';
+
+            results.forEach((row, i) => {
+                const stripe = i % 2 === 1 ? ' row-stripe' : '';
+
+                // 年化回报等级
+                let annualClass = 'annual-low';
+                if (row.annualized_rate >= p66) annualClass = 'annual-high';
+                else if (row.annualized_rate >= p33) annualClass = 'annual-mid';
+
+                // 股票切换时加分隔行（包含现价信息）
+                if (row.symbol !== lastSymbol) {
+                    lastSymbol = row.symbol;
+                    const stockData = stockList.find(s => s.symbol === row.symbol);
+                    const price = stockData && stockData.data ? stockData.data.current_price : '--';
+                    html += `<tr class="stock-sep"><td colspan="7">▼ ${row.symbol} — 现价 $${typeof price === 'number' ? price.toFixed(2) : price}</td></tr>`;
+                }
+
+                html += `<tr class="${stripe}">
+                    <td>${row.symbol}</td>
+                    <td>--</td>
+                    <td>${row.expiration_date}</td>
+                    <td>$${row.strike.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+                    <td>$${row.premium.toFixed(4)}</td>
+                    <td>${(row.single_return * 100).toFixed(2)}%</td>
+                    <td class="${annualClass}">${(row.annualized_rate * 100).toFixed(2)}%</td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function setSort(mode) {
+            currentSort = mode;
+            document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.sort-btn[data-sort="${mode}"]`).classList.add('active');
+            renderTable();
+        }
+
+        // ===== Export CSV =====
+        function exportCSV() {
+            if (!allResultsData || !allResultsData.all_results || !allResultsData.all_results.length) {
+                showToast('没有数据可导出');
+                return;
+            }
+            const headers = ['股票','现价','到期日','行权价','权利金','单笔回报','年化回报'];
+            let csv = '\uFEFF' + headers.join(',') + '\n';
+            allResultsData.all_results.forEach(r => {
+                const stockData = stockList.find(s => s.symbol === r.symbol);
+                const price = stockData && stockData.data ? stockData.data.current_price : '--';
+                csv += [
+                    r.symbol, price, r.expiration_date, r.strike, r.premium,
+                    (r.single_return * 100).toFixed(2) + '%',
+                    (r.annualized_rate * 100).toFixed(2) + '%'
+                ].join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `options_compare_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== Theme Toggle =====
+        const THEME_KEY = 'options_compare_theme';
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeToggle');
+            if (body.classList.contains('theme-light')) {
+                body.classList.remove('theme-light');
+                btn.textContent = '☀️ 切换主题';
+                localStorage.setItem(THEME_KEY, 'dark');
+            } else {
+                body.classList.add('theme-light');
+                btn.textContent = '🌙 切换主题';
+                localStorage.setItem(THEME_KEY, 'light');
+            }
+        }
+        // 初始化主题
+        (function initTheme() {
+            const saved = localStorage.getItem(THEME_KEY);
+            if (saved === 'light') {
+                document.body.classList.add('theme-light');
+                document.getElementById('themeToggle').textContent = '🌙 切换主题';
+            }
+        })();
+
+        // ===== Init =====
+        loadFromStorage();
+        if (stockList.length > 0) {
+            // 恢复后，用第一只股票拉取全局行权日列表
+            (async () => {
+                try {
+                    const resp = await fetch(`/api/expirations?symbol=${encodeURIComponent(stockList[0].symbol)}`);
+                    const expData = await resp.json();
+                    globalExpirations = expData.expirations || [];
+                    if (globalExpirations.length > 0) {
+                        // 如果有缓存的行权日且仍在列表中，则保留；否则默认第一个
+                        if (globalSelectedExp && globalExpirations.find(e => e.date === globalSelectedExp)) {
+                            // 保持缓存的日期
+                        } else {
+                            globalSelectedExp = globalExpirations[0].date;
+                        }
+                    }
+                } catch (e) {
+                    globalExpirations = [];
+                }
+                updateGlobalExpSelect();
+                renderCards();
+            })();
+        } else {
+            renderCards();
+        }
+
+        // ===== 卡片折叠 =====
+        function toggleCards() {
+            const container = document.getElementById('stockCards');
+            const btn = document.getElementById('cardsToggleBtn');
+            const empty = document.getElementById('emptyCards');
+            if (container.style.display === 'none') {
+                container.style.display = '';
+                if (stockList.length === 0) empty.style.display = 'block';
+                btn.innerHTML = '▼ 持仓列表';
+            } else {
+                container.style.display = 'none';
+                if (empty) empty.style.display = 'none';
+                btn.innerHTML = '▶ 持仓列表';
+            }
+        }
+
+        function collapseCards() {
+            const container = document.getElementById('stockCards');
+            const btn = document.getElementById('cardsToggleBtn');
+            const empty = document.getElementById('emptyCards');
+            if (container.style.display !== 'none') {
+                container.style.display = 'none';
+                if (empty) empty.style.display = 'none';
+                btn.innerHTML = '▶ 持仓列表';
+            }
+        }
+    </script>
+</body>
+</html>
